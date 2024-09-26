@@ -1,15 +1,16 @@
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    if (!token) {
+        return res.status(401).json({ error: 'Token manquant' });
+    }
     try {
-        const token = req.headers.authorization.split(' ')[1];
         const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-        const userId = decodedToken.user.id;
-        req.auth = {
-            userId: userId
-        };
+        req.auth = {userId: decodedToken.userId};
         next();
     } catch(error) {
-        res.status(401).json({error})
+        console.error('Erreur d\'authentification', error)
+        res.status(401).json({error: 'Requête non identifiée'})
     }
 };

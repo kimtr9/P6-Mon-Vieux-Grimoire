@@ -12,7 +12,7 @@ exports.createBook = (req, res, next) => {
         const imagePath = `images/${Date.now()}_${req.file.originalname}`;
     
         sharp(buffer)
-          .resize(500, {fit: sharp.fit.cover}) // Ajustez la taille selon vos besoins
+          .resize(500, {fit: sharp.fit.cover})
           .toFormat('webp', {quality: 80})
           .toFile(imagePath)
           .then(() => {
@@ -54,19 +54,18 @@ exports.getOneBook = (req, res, next) => {
         })
 };
 
-exports.addRating= (res, req, next) => {
+exports.addRating = async (req, res, next) => {
     try {
         const { userId, grade } = req.body;
         const book = Book.findById(req.params.id);
         if (!book) {
           return res.status(404).json({ message: 'Livre non trouvé' });
         }
-        //Vérifier qu'il n'y est pas déjà une note de ce user
+        //Vérifivcation qu'il n'y a pas déjà une note de ce user
         const existingRating = book.ratings.find(rat => rat.userId.toString() === userId);
         if (existingRating) {
           return res.status(400).json({ message: 'Vous avez déjà noté ce livre' });
         }
-    // Ajout nouvelle note
     book.ratings.push({ userId, grade });
 
     // Novelle note moyenne
@@ -74,7 +73,7 @@ exports.addRating= (res, req, next) => {
     const sumRatings = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
     book.averageRating = sumRatings / totalRatings;
 
-    book.save();
+    await book.save();
 
     res.status(201).json({ message: 'Notation ajoutée', averageRating: book.averageRating });
     } catch (error) {
@@ -110,7 +109,7 @@ exports.modifyBook = (req, res, next) => {
             if (book.userId != req.auth.userId) {
                 res.status(401).json({message: 'Not authorized'});
             } else {
-                const filename = thing.imageUrl.split('/images/')[1];
+                const filename = book.imageUrl.split('/images/')[1];
                 fs.unlink(`images/${filename}`, () => {
                     Book.deleteOne({_id: req.params.id})
                         .then(() => { res.status(200).json({message: 'Livre supprimé !'})})
@@ -128,3 +127,4 @@ exports.getAllBooks =  (req, res, next) => {
       .then(books => res.status(200).json(books))
       .catch(error => res.status(400).json({ error }));
 };
+
