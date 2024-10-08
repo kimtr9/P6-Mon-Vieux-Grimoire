@@ -3,7 +3,6 @@ const fs = require ('fs');
 const sharp = require('sharp');
 
 exports.createBook = (req, res, next) => {
-    console.log("Fichier reçu :", req.file); 
 
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
@@ -17,12 +16,11 @@ exports.createBook = (req, res, next) => {
             return res.status(400).json({ message: 'Erreur lors du traitement de l\'image' });
         }
             
-        const imagePath = `images/${Date.now()}_${cleanFileName.split('.')[0]}.webp`;
-        console.log("Chemin de l'image :", imagePath);
+        const imagePath = `images/${Date.now()}.webp`;
     
         sharp(buffer)
           .resize({width: 208, height: 260, fit: 'cover', position: 'center'}) 
-          .toFormat('webp', {quality: 100}) 
+          .toFormat('webp', {quality: 80}) 
           .toFile(imagePath) 
           .then(() => {
 
@@ -101,6 +99,7 @@ exports.getBestRatedBooks = (req, res, next) => {
 exports.modifyBook = (req, res, next) => {
     Book.findOne({_id: req.params.id})
         .then(book => {
+            console.log('User authentifié :', req.auth)
             if (book.userId != req.auth.userId) {
                 res.status(403).json({message: '403: unauthorized request'});
             } 
@@ -138,9 +137,9 @@ exports.modifyBook = (req, res, next) => {
         });
  };
 
-exports.getAllBooks =  (req, res, next) => {
+ exports.getAllBooks = (req, res, next) => {
     Book.find()
-      .then(books => res.status(200).json(books))
-      .catch(error => res.status(400).json({ error }));
+        .then(books => res.status(200).json(books))
+        .catch(error => res.status(404).json({ error }));
 };
 
