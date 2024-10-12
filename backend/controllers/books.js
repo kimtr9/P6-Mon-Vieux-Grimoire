@@ -12,10 +12,10 @@ exports.createBook = async (req, res, next) => {
             const webpFileName = `${req.file.filename.split('.')[0]}.webp`; // Création d'un nom de fichier pour le WebP
             const webpFilePath = `images/${webpFileName}`;
 
-            // Appel de processImage pour gérer la conversion et la suppression
+
             await imageHandler(req.file.path, webpFilePath)
 
-            // Sauvegarder le livre avec l'image formatée
+            // Sauvegarde livre avec l'image formatée
             const book = new Book({
                 ...bookObject,
                 userId: req.auth.userId,
@@ -70,7 +70,7 @@ exports.addRating = async (req, res, next) => {
       const sumRatings = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
       book.averageRating = totalRatings > 0 ? (sumRatings / totalRatings) : 0;
   
-      // Sauvegarde du livre avec la nouvelle note
+
       await book.save();
   
       res.status(201).json(book);
@@ -94,7 +94,6 @@ exports.getBestRatedBooks = (req, res, next) => {
 
 exports.modifyBook = async (req, res, next) => {
     try {
-        // Construire l'objet bookObject en fonction de la présence d'un fichier
         const bookObject = req.file ? {
             ...JSON.parse(req.body.book),
             imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
@@ -121,10 +120,9 @@ exports.modifyBook = async (req, res, next) => {
             const webpFileName = `${req.file.filename.split('.')[0]}.webp`;
             const webpFilePath = `images/${webpFileName}`;
 
-            // Appel de imageHandler pour gérer la conversion
+            // gestion conversion image
             await imageHandler(req.file.path, webpFilePath);
 
-            // Mise à jour de l'URL de l'image dans bookObject
             bookObject.imageUrl = `${req.protocol}://${req.get('host')}/${webpFilePath}`;
         }
 
