@@ -5,10 +5,11 @@ const booksRoutes = require('./routes/books');
 const userRoutes = require ('./routes/user');
 
 const path = require ('path');
-
 const app = express();
 
-mongoose.connect('mongodb+srv://kim9truong:owJLBqdrpDYQ5IGD@cluster0.apejr.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0') 
+require('dotenv').config();
+
+mongoose.connect(process.env.DB_URL)
     .then(() => console.log('Connexion à MongoDB réussie !'))
     .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 

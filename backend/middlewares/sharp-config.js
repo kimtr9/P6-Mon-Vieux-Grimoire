@@ -19,7 +19,7 @@ const imageHandler = async (inputPath, outputPath) => {
         });
     } catch (error) {
         console.error('Erreur lors du traitement de l\'image:', error);
-        throw error; // Propager l'erreur
+        throw error;
     }
 };
 

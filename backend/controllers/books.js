@@ -2,6 +2,7 @@ const Book = require ('../models/Book');
 const fs = require ('fs');
 const {imageHandler} = require ('../middlewares/sharp-config')
 
+//Créer un livre
 exports.createBook = async (req, res, next) => {
     try {
         const bookObject = JSON.parse(req.body.book);
@@ -9,13 +10,13 @@ exports.createBook = async (req, res, next) => {
         delete bookObject._userId;
 
         if (req.file) {
-            const webpFileName = `${req.file.filename.split('.')[0]}.webp`; // Création d'un nom de fichier pour le WebP
+            const webpFileName = `${req.file.filename.split('.')[0]}.webp`; // Création nom de fichier pour le WebP
             const webpFilePath = `images/${webpFileName}`;
 
-            // Appel de processImage pour gérer la conversion et la suppression
+            // Appel imageHandler pour gérer la conversion et la suppression de l'image d'origne
             await imageHandler(req.file.path, webpFilePath)
 
-            // Sauvegarder le livre avec l'image formatée
+            // Sauvegarder le nouveau livre avec l'image formatée
             const book = new Book({
                 ...bookObject,
                 userId: req.auth.userId,
@@ -32,11 +33,12 @@ exports.createBook = async (req, res, next) => {
             return res.status(201).json({ message: 'Livre enregistré' });
         }   
     } catch (error) {
-        console.error('Erreur dans createBook:', error);
+        console.error('Erreur lors de la création du livre:', error);
         res.status(500).json({ error });
     }
     };
 
+// Trouver un livre spécifique
 exports.getOneBook = (req, res, next) => {
     Book.findOne({_id: req.params.id})
        .then((book) => {
@@ -48,9 +50,10 @@ exports.getOneBook = (req, res, next) => {
         .catch(error => res.status(400).json({error}))
 };
 
+// Ajout d'une note à un livre
 exports.addRating = async (req, res, next) => {
     try {
-      const { userId, rating } = req.body;
+      const { userId, rating } = req.body; // récupération de l'userId et de la note
       const book = await Book.findById(req.params.id);
   
       if (!book) {
@@ -62,7 +65,7 @@ exports.addRating = async (req, res, next) => {
         return res.status(400).json({ message: 'Vous avez déjà noté ce livre' });
       }
   
-      // Ajout nouvelle note au tableau des ratings
+      // Ajout nouvelle note 
       book.ratings.push({ userId, grade: rating, bookId: book._id });
   
       // Nouvelle note moyenne
@@ -80,10 +83,11 @@ exports.addRating = async (req, res, next) => {
     }
   };
 
+// Obtention des livres les mieux notés
 exports.getBestRatedBooks = (req, res, next) => {
     Book.find()
-        .sort({ averageRating: -1 })
-        .limit(3)
+        .sort({ averageRating: -1 }) // tri des livres par leur note moyenne
+        .limit(3) // limiter à 3 résultats
         .then(books => {
             res.status(200).json(books)
         })
@@ -92,13 +96,12 @@ exports.getBestRatedBooks = (req, res, next) => {
         });
 };
 
+//Modification d'un livre
 exports.modifyBook = async (req, res, next) => {
     try {
-        // Construire l'objet bookObject en fonction de la présence d'un fichier
         const bookObject = req.file ? {
             ...JSON.parse(req.body.book),
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-        } : { ...req.body };
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`} : { ...req.body };
 
         delete bookObject._userId;
 
@@ -136,18 +139,18 @@ exports.modifyBook = async (req, res, next) => {
     }
 };
 
-
+// Suppression d'un livre
  exports.deleteBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id})
         .then(book => {
             if (book.userId != req.auth.userId) {
                 return res.status(403).json({message: '403: unauthorized request'});
             }
-            const filename = book.imageUrl.split('/images/')[1];
+            const filename = book.imageUrl.split('/images/')[1]; // Récupération du nom de l'image
             if (!filename) {
                 return res.status(400).json({ message: "Image introuvable" });
             }
-            fs.unlink(`images/${filename}`, () => {
+            fs.unlink(`images/${filename}`, () => { // Suppression de l'image 
                 Book.deleteOne({_id: req.params.id})
                     .then(() => { res.status(200).json({message: 'Livre supprimé !'})})
                     .catch(error => res.status(401).json({ error }));
@@ -158,6 +161,7 @@ exports.modifyBook = async (req, res, next) => {
         });
  };
 
+ // Afficher tous les livres
  exports.getAllBooks = (req, res, next) => {
     Book.find()
         .then(books => res.status(200).json(books))
