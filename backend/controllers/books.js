@@ -13,17 +13,10 @@ exports.createBook = async (req, res, next) => {
             const webpFileName = `${req.file.filename.split('.')[0]}.webp`; // Création nom de fichier pour le WebP
             const webpFilePath = `images/${webpFileName}`;
 
-<<<<<<< HEAD
             // Appel imageHandler pour gérer la conversion et la suppression de l'image d'origne
             await imageHandler(req.file.path, webpFilePath)
 
-            // Sauvegarder le nouveau livre avec l'image formatée
-=======
-
-            await imageHandler(req.file.path, webpFilePath)
-
-            // Sauvegarde livre avec l'image formatée
->>>>>>> 3c50357f38dc8e50b43cf03042fab87efd339e0c
+            // Sauvegarde nouveau livre avec l'image formatée
             const book = new Book({
                 ...bookObject,
                 userId: req.auth.userId,
@@ -140,7 +133,7 @@ exports.modifyBook = async (req, res, next) => {
         await Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id });
         res.status(200).json({ message: 'Livre modifié!' });
     } catch (error) {
-        console.error('Erreur dans modifyBook:', error);
+        console.error('Erreur dans la modification du livre:', error);
         res.status(500).json({ error });
     }
 };

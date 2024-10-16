@@ -6,7 +6,7 @@ const imageHandler = async (inputPath, outputPath) => {
     try {
         await sharp(inputPath)
             .resize({ width: 463, height: 595, fit: 'cover', position: 'center' })
-            .toFormat('webp', { quality: 90 })
+            .toFormat('webp', { quality: 100 })
             .toFile(outputPath);
         
         // Suppression du fichier d'origine après conversion
